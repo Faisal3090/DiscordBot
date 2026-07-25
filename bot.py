@@ -41,18 +41,23 @@ async def on_ready():
 
 def trigger_webhook(slug):
     try:
+        print("=" * 50)
+        print("Calling webhook...")
+        print("Webhook URL:", WEBHOOK)
+        print("Contest:", slug)
+
         response = requests.post(
             WEBHOOK,
-            json={
-                "contest_slug": slug
-            },
+            json={"contest_slug": slug},
             timeout=60
         )
 
-        print(f"n8n Response: {response.status_code}")
+        print("Status Code:", response.status_code)
+        print("Response Body:", response.text)
+        print("=" * 50)
 
     except Exception as e:
-        print(e)
+        print("Webhook Error:", str(e))
 
 
 @bot.tree.command(

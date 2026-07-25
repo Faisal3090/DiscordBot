@@ -1,8 +1,11 @@
 import os
 import asyncio
+import threading
 import requests
 import discord
+import uvicorn
 
+from fastapi import FastAPI
 from discord import app_commands
 from dotenv import load_dotenv
 
@@ -10,6 +13,13 @@ load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 WEBHOOK = os.getenv("N8N_WEBHOOK")
+
+app = FastAPI()
+
+
+@app.get("/")
+def root():
+    return {"status": "Discord Bot Running"}
 
 
 class MyBot(discord.Client):
@@ -42,7 +52,7 @@ def trigger_webhook(slug):
         print(f"n8n Response: {response.status_code}")
 
     except Exception as e:
-        print(f"Webhook error: {e}")
+        print(e)
 
 
 @bot.tree.command(
@@ -58,6 +68,20 @@ async def update(interaction: discord.Interaction, contest_slug: str):
     asyncio.create_task(
         asyncio.to_thread(trigger_webhook, contest_slug)
     )
+
+
+def run_api():
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 8000))
+    )
+
+
+threading.Thread(
+    target=run_api,
+    daemon=True
+).start()
 
 
 bot.run(TOKEN)
